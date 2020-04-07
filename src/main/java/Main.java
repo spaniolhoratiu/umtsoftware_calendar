@@ -24,7 +24,7 @@ public class Main {
     private static int meetingDurationInMinutes;
 
 //  Sample Output  [['11:30','12:30'], ['15:00','16:00'], ['18:00':'18:30']]
-//  Actual good output(because the first person is occupied [['11:30', '12:00'], ['15:00','16:00'], ['18:00':'18:30']]
+//  Actual good output(because the first person is occupied between 12:00-13:00) [['11:30', '12:00'], ['15:00','16:00'], ['18:00':'18:30']]
 
     public static void main(String[] args) {
 
