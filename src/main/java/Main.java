@@ -1,74 +1,78 @@
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Main {
 
     private static List<LocalTime> intersectedRange;
+    private static List<LocalTime> calendar1Range;
+    private static List<LocalTime> calendar2Range;
+    private static String calendar1RangeString;
+    private static String calendar2RangeString;
+    private static String bookedCalendar1String;
+    private static String bookedCalendar2String;
+    private static String meetingString;
     private static List<List<LocalTime>> calendar1Booked;
     private static List<List<LocalTime>> calendar2Booked;
     private static List<List<LocalTime>> approvedMeetingIntervals;
-    private static final DateTimeFormatter DATE_TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("HH:mm");
     private static int meetingDurationInMinutes;
 
 //  Sample Output  [['11:30','12:30'], ['15:00','16:00'], ['18:00':'18:30']]
-// Actual good output [['11:30', '12:00'], ['15:00','16:00'], ['18:00':'18:30']]
+//  Actual good output(because the first person is occupied [['11:30', '12:00'], ['15:00','16:00'], ['18:00':'18:30']]
 
     public static void main(String[] args) {
 
-       String test = "[['09:00', '10:30'], ['12:00', '13:00'], ['16:00', '18:00']]";
-       String test1 = test.substring(1);
-       String test2 = test1.substring(0, test1.length() - 1);
-       System.out.println(test2);
+        bookedCalendar1String = "booked calendar1: [['9:00','10:30'], ['12:00','13:00'], ['16:00','18:00']]";
+        bookedCalendar2String = "booked calendar2: [['10:00','11:30'], ['12:30','14:30'], ['14:30','15:00'], ['16:00','17:00']]";
+        calendar1RangeString = "calendar1 range limits: ['9:00','20:00']";
+        calendar2RangeString = "calendar2 range limits: ['10:00','18:30']";
+        meetingString = "Meeting Time Minutes: 30";
 
-       DATE_TIME_FORMATTER.parse("12:30");
+        setUp();
 
+        computeAllPossibleMeetingTimes();
 
-       //List<List<LocalTime>> meetingstest = LocalTime.parse();
-
-//        setUp();
-//
-//        System.out.println(intersectedRange);
-//        System.out.println(calendar1Booked);
-//        System.out.println(calendar2Booked);
-//
-//        List<LocalTime> meetingInterval = new ArrayList<>();
-//        meetingInterval.add(intersectedRange.get(0));
-//        meetingInterval.add(meetingInterval.get(0).plus(meetingDurationInMinutes, ChronoUnit.MINUTES));
-//
-//        // While meeting ends before both schedules or at the end of both schedules
-//        while(true)
-//        {
-//            LocalTime meetingStart = meetingInterval.get(0);
-//            LocalTime meetingEnd = meetingInterval.get(1);
-//            if(meetingEnd.isAfter(intersectedRange.get(1)))
-//                break;
-//
-//            boolean is1Occ = isPersonOccupiedInInterval(calendar1Booked, meetingInterval);
-//            boolean is2Occ = isPersonOccupiedInInterval(calendar2Booked, meetingInterval);
-//            if(!is1Occ && !is2Occ)
-//            {
-//                List<LocalTime> newIntervalThatAvoidsReferences = new ArrayList<>();
-//                newIntervalThatAvoidsReferences.add(meetingStart);
-//                newIntervalThatAvoidsReferences.add(meetingEnd);
-//                approvedMeetingIntervals.add(newIntervalThatAvoidsReferences);
-//            }
-//
-//            meetingInterval.set(0, meetingInterval.get(0).plus(1, ChronoUnit.MINUTES));
-//            meetingInterval.set(1, meetingInterval.get(1).plus(1, ChronoUnit.MINUTES));
-//        }
-//
 //        System.out.println("Before parsing");
 //        System.out.println(approvedMeetingIntervals);
 //
 //        System.out.println("After parsing");
-//        parse(approvedMeetingIntervals);
-//        System.out.println(approvedMeetingIntervals);
+        parse(approvedMeetingIntervals);
+        System.out.println(approvedMeetingIntervals);
+    }
+
+    private static void computeAllPossibleMeetingTimes()
+    {
+        List<LocalTime> meetingInterval = new ArrayList<>();
+        meetingInterval.add(intersectedRange.get(0));
+        meetingInterval.add(meetingInterval.get(0).plus(meetingDurationInMinutes, ChronoUnit.MINUTES));
+
+        // While meeting ends before both schedules or at the end of both schedules
+        while(true)
+        {
+            LocalTime meetingStart = meetingInterval.get(0);
+            LocalTime meetingEnd = meetingInterval.get(1);
+            if(meetingEnd.isAfter(intersectedRange.get(1)))
+                break;
+
+            boolean is1Occ = isPersonOccupiedInInterval(calendar1Booked, meetingInterval);
+            boolean is2Occ = isPersonOccupiedInInterval(calendar2Booked, meetingInterval);
+            if(!is1Occ && !is2Occ)
+            {
+                List<LocalTime> newIntervalThatAvoidsReferences = new ArrayList<>();
+                newIntervalThatAvoidsReferences.add(meetingStart);
+                newIntervalThatAvoidsReferences.add(meetingEnd);
+                approvedMeetingIntervals.add(newIntervalThatAvoidsReferences);
+            }
+
+            meetingInterval.set(0, meetingInterval.get(0).plus(1, ChronoUnit.MINUTES));
+            meetingInterval.set(1, meetingInterval.get(1).plus(1, ChronoUnit.MINUTES));
+        }
     }
 
 
@@ -146,78 +150,103 @@ public class Main {
 
     private static void setUp()
     {
-        LocalTime calendar1RangeBeginning = LocalTime.parse("09:00");
-        LocalTime calendar1RangeEnding = LocalTime.parse("20:00");
-
-        LocalTime calendar2RangeBeginning = LocalTime.parse("10:00");
-        LocalTime calendar2RangeEnding = LocalTime.parse("18:30");
-
-        List<LocalTime> calendar1Range = new ArrayList<>();
-        calendar1Range.add(calendar1RangeBeginning);
-        calendar1Range.add(calendar1RangeEnding);
-
-        List<LocalTime> calendar2Range = new ArrayList<>();
-        calendar2Range.add(calendar2RangeBeginning);
-        calendar2Range.add(calendar2RangeEnding);
+        calendar1Range = new ArrayList<>();
+        calendar2Range = new ArrayList<>();
+        setUpRange(calendar1RangeString, 1);
+        setUpRange(calendar2RangeString, 2);
 
         intersectedRange = computeIntersectedRange(calendar1Range, calendar2Range);
 
-        setUpCalendar1();
-        setUpCalendar2();
+        calendar2Booked = new ArrayList<>();
+        calendar1Booked = new ArrayList<>();
+        setUpCalendar(bookedCalendar1String, 1);
+        setUpCalendar(bookedCalendar2String, 2);
 
-        meetingDurationInMinutes = 30;
+        setUpMeetingTime();
 
         approvedMeetingIntervals = new ArrayList<>();
+
+    }
+
+    private static void setUpMeetingTime()
+    {
+        List<String> splitMeetingString = Arrays.asList(meetingString.split(": "));
+        meetingDurationInMinutes = Integer.parseInt(splitMeetingString.get(1));
     }
 
 
-
-    private static void setUpCalendar2()
+    private static void setUpRange(String calendarRangeString, int whichRange)
     {
-        calendar2Booked = new ArrayList<>();
+//        calendar1RangeString = "calendar1 range limits: ['9:00','20:00']";
+        List<String> aux = Arrays.asList(calendarRangeString.split(": "));
+        // ['9:00','20:00']
+        calendarRangeString = aux.get(1);
 
-        List<LocalTime> c2Interval1 = new ArrayList<>();
-        c2Interval1.add(LocalTime.parse("10:00"));
-        c2Interval1.add(LocalTime.parse("11:30"));
+        // '9:00','20:00'
+        calendarRangeString = calendarRangeString.substring(1);
+        calendarRangeString = calendarRangeString.substring(0, calendarRangeString.length() - 1);
 
-        List<LocalTime> c2Interval2 = new ArrayList<>();
-        c2Interval2.add(LocalTime.parse("12:30"));
-        c2Interval2.add(LocalTime.parse("14:30"));
+        // '09:00' '20:00'
+        List<String> splitString = Arrays.asList(calendarRangeString.split(","));
+        String firstTime = splitString.get(0).substring(1);
+        firstTime = firstTime.substring(0, firstTime.length() - 1);
+        String secondTime = splitString.get(1).substring(1);
+        secondTime = secondTime.substring(0, secondTime.length() - 1);
 
-        List<LocalTime> c2Interval3 = new ArrayList<>();
-        c2Interval3.add(LocalTime.parse("14:30"));
-        c2Interval3.add(LocalTime.parse("15:00"));
+        if(firstTime.length() == 4)
+            firstTime = "0" + firstTime;
+        if(secondTime.length() == 4)
+            secondTime = "0" + secondTime;
 
-        List<LocalTime> c2Interval4 = new ArrayList<>();
-        c2Interval4.add(LocalTime.parse("16:00"));
-        c2Interval4.add(LocalTime.parse("17:00"));
+        if(whichRange == 1)
+        {
+            calendar1Range.add(LocalTime.parse(firstTime));
+            calendar1Range.add(LocalTime.parse(secondTime));
+        }
+        else
+        {
+            calendar2Range.add(LocalTime.parse(firstTime));
+            calendar2Range.add(LocalTime.parse(secondTime));
+        }
 
-        calendar2Booked.add(c2Interval1);
-        calendar2Booked.add(c2Interval2);
-        calendar2Booked.add(c2Interval3);
-        calendar2Booked.add(c2Interval4);
     }
 
 
-    private static void setUpCalendar1()
+    private static void setUpCalendar(String bookedCalendarString, int whichCalendar)
     {
-        calendar1Booked = new ArrayList<>();
+        //Split at ": " and take the right part
+        List<String> aux = Arrays.asList(bookedCalendarString.split(": "));
+        bookedCalendarString = aux.get(1);
+        bookedCalendarString = bookedCalendarString.substring(1);
+        bookedCalendarString = bookedCalendarString.substring(0, bookedCalendarString.length() - 1);
 
-        List<LocalTime> c1Interval1 = new ArrayList<>();
-        c1Interval1.add(LocalTime.parse("09:00"));
-        c1Interval1.add(LocalTime.parse("10:30"));
+        List<String> tokenization = Arrays.asList(bookedCalendarString.split(", "));
+        for(String s : tokenization) // all time have 6 chars and always from 2-7 and 10-15
+        {
+            // ['9:00','10:00'] -> '9:00','10:00'
+            s = s.substring(1);
+            s = s.substring(0, s.length() - 1);
+            // '9:00' -> 9:00 separated by '10:00' -> 10:00
+            List<String> splitS = Arrays.asList(s.split(","));
+            String firstTime = splitS.get(0).substring(1);
+            firstTime = firstTime.substring(0, firstTime.length() - 1);
+            String secondTime = splitS.get(1).substring(1);
+            secondTime = secondTime.substring(0, secondTime.length() - 1);
 
-        List<LocalTime> c1Interval2 = new ArrayList<>();
-        c1Interval2.add(LocalTime.parse("12:00"));
-        c1Interval2.add(LocalTime.parse("13:00"));
+            // 9:00 -> 09:00
+            List<LocalTime> interval = new ArrayList<>();
+            if(firstTime.length() == 4)
+                firstTime = "0" + firstTime;
+            if(secondTime.length() == 4)
+                secondTime = "0" + secondTime;
 
-        List<LocalTime> c1Interval3 = new ArrayList<>();
-        c1Interval3.add(LocalTime.parse("16:00"));
-        c1Interval3.add(LocalTime.parse("18:00"));
+            interval.add(LocalTime.parse(firstTime));
+            interval.add(LocalTime.parse(secondTime));
+            if(whichCalendar == 1)
+                calendar1Booked.add(interval);
+            else calendar2Booked.add(interval);
+        }
 
-        calendar1Booked.add(c1Interval1);
-        calendar1Booked.add(c1Interval2);
-        calendar1Booked.add(c1Interval3);
     }
 
 
